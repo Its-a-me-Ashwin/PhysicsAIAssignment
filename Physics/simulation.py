@@ -12,7 +12,8 @@ screen_width = 1240
 screen_height = 800
 
 # Parameters for the simulation
-gravity = 0  # 1500
+gravityY = 0  # 1500
+gravityX = 0
 timePeriod = 120
 dt = 1 / timePeriod
 
@@ -121,7 +122,7 @@ class Simulation:
 
     def update(self):
         if self.running_simulation:
-            inputForFrame = [gravity, targetDensity, pressureMultiplier]
+            inputForFrame = [gravityX, gravityY, targetDensity, pressureMultiplier]
             outputForFrame = []
             positions = [particle.position for particle in self.Particles]
             kdtree = KDTree(positions)
@@ -136,16 +137,17 @@ class Simulation:
 
                 if self.recording and not self.AIControl:
                     inputForFrame.append(particle.position[0]/screen_width)
-                    inputForFrame.append(particle.position[1]/screen_height)
+                    #inputForFrame.append(particle.position[1]/screen_height)
                     inputForFrame.append(particle.velocity[0]/screen_width)
-                    inputForFrame.append(particle.velocity[1]/screen_height)
+                    #inputForFrame.append(particle.velocity[1]/screen_height)
                     outputForFrame.append((pressureForce[0] / particle.density) * dt)
-                    outputForFrame.append((pressureForce[1] / particle.density) * dt)
+                    #outputForFrame.append((pressureForce[1] / particle.density) * dt)
 
                 if not self.AIControl:
                     particle.velocity[0] -= (pressureForce[0] / particle.density) * dt
                     particle.velocity[1] -= (pressureForce[1] / particle.density) * dt
-                    particle.velocity[1] += gravity * dt
+                    particle.velocity[1] += gravityY * dt
+                    particle.velocity[0] += gravityX * dt
                 else:
                     ## Add your code here or call a function here that acomplishes the task.
                     ## Input to the AI model can include the current state of the particles and the prvious states
@@ -156,7 +158,7 @@ class Simulation:
 
             if self.recording and not self.AIControl:
                 self.inputToModel.append(inputForFrame)
-                self.outputToModel.append(outputForFrame[0])
+                self.outputToModel.append(outputForFrame)
 
             self.maxAbsVel = 0
             for particle in self.Particles:
@@ -185,8 +187,8 @@ class Simulation:
 
                     if event.key == pygame.K_w:
                         self.dataSet = []
-                        self.outputToModel = []
                         self.inputToModel = []
+                        self.outputToModel = []
                         self.recording = True
 
                     if event.key == pygame.K_a:
@@ -196,8 +198,8 @@ class Simulation:
                         self.inputToModel = np.array(self.inputToModel)
                         self.outputToModel = np.array(self.outputToModel)
 
-                        np.save("./input.npy", self.inputToModel)
-                        np.save("./output.npy", self.outputToModel)
+                        np.save("../Dataset/input.npy", self.inputToModel)
+                        np.save("../Dataset/output.npy", self.outputToModel)
                         self.recording = False
 
                 elif event.type == pygame.MOUSEBUTTONDOWN:
