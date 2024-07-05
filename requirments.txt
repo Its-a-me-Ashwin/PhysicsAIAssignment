@@ -1,0 +1,5 @@
+pykan
+torch
+scipy
+numpy
+pygame
