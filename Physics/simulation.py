@@ -5,6 +5,9 @@ from scipy.spatial import KDTree
 import numpy as np
 import sys
 import math, time
+import torch
+from torch_geometric.data import Data
+from torch_geometric.utils import dense_to_sparse
 from particle import Particle
 
 # Screen dimensions
@@ -16,6 +19,7 @@ gravityY = 0  # 1500
 gravityX = 0
 timePeriod = 120
 dt = 1 / timePeriod
+numHyperparameters = 4
 
 # Colors
 WHITE = (255, 255, 255)
@@ -43,6 +47,7 @@ class Simulation:
         self.dataSet = []
         self.inputToModel = []
         self.outputToModel = []
+        self.graphData = []
         self.screen = None
         self.AI = AI
         if AI == None:
@@ -120,6 +125,33 @@ class Simulation:
     def setup(self):
         self.Particles = Particle.generateGridParticles(20, numParticles, BOXSize)
 
+    def create_graph_data(self):
+        particle_data = []
+        for particle in self.Particles:
+            particle_data.extend([particle.position[0], particle.position[1], particle.velocity[0], particle.velocity[1]])
+
+        num_particles = len(self.Particles)
+
+        particle_data = torch.tensor(particle_data).view(num_particles, 4)
+        positions = particle_data[:, :2].numpy()
+        velocities = particle_data[:, 2:]
+
+        distances = np.linalg.norm(positions[:, np.newaxis, :] - positions[np.newaxis, :, :], axis=-1)
+        adjacency_matrix = np.zeros((num_particles, num_particles))
+
+        for i in range(num_particles):
+            for j in range(num_particles):
+                if distances[i, j] <= sRadius and i != j:
+                    adjacency_matrix[i, j] = distances[i, j]
+
+        edge_index, edge_weight = dense_to_sparse(torch.tensor(adjacency_matrix, dtype=torch.float))
+
+        node_features = torch.cat([particle_data[:, :2], particle_data[:, 2:]], dim=1)
+        edge_attr = edge_weight.view(-1, 1)
+
+        graph_data = Data(x=node_features, edge_index=edge_index, edge_attr=edge_attr, y=node_features)
+        self.graphData.append(graph_data)
+
     def update(self):
         if self.running_simulation:
             inputForFrame = [gravityX, gravityY, targetDensity, pressureMultiplier]
@@ -137,11 +169,11 @@ class Simulation:
 
                 if self.recording and not self.AIControl:
                     inputForFrame.append(particle.position[0]/screen_width)
-                    #inputForFrame.append(particle.position[1]/screen_height)
+                    inputForFrame.append(particle.position[1]/screen_height)
                     inputForFrame.append(particle.velocity[0]/screen_width)
-                    #inputForFrame.append(particle.velocity[1]/screen_height)
+                    inputForFrame.append(particle.velocity[1]/screen_height)
                     outputForFrame.append((pressureForce[0] / particle.density) * dt)
-                    #outputForFrame.append((pressureForce[1] / particle.density) * dt)
+                    outputForFrame.append((pressureForce[1] / particle.density) * dt)
 
                 if not self.AIControl:
                     particle.velocity[0] -= (pressureForce[0] / particle.density) * dt
@@ -175,6 +207,9 @@ class Simulation:
             for particle in self.Particles:
                 inputForFrame.append(particle.velocity[0]/(self.maxAbsVel**0.5))
 
+            # Create graph data for the current frame
+            self.create_graph_data()
+
         if self.render:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -189,6 +224,7 @@ class Simulation:
                         self.dataSet = []
                         self.inputToModel = []
                         self.outputToModel = []
+                        self.graphData = []
                         self.recording = True
 
                     if event.key == pygame.K_a:
@@ -197,6 +233,7 @@ class Simulation:
                     if event.key == pygame.K_s:
                         self.inputToModel = np.array(self.inputToModel)
                         self.outputToModel = np.array(self.outputToModel)
+                        torch.save(self.graphData, "../Dataset/graph_dataset.pt")
 
                         np.save("../Dataset/input.npy", self.inputToModel)
                         np.save("../Dataset/output.npy", self.outputToModel)
