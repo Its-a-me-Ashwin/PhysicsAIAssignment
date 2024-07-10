@@ -1,7 +1,10 @@
 import torch
 from torch_geometric.data import DataLoader
 from sklearn.model_selection import train_test_split
-import json
+import json, os
+from itertools import product
+from autoencoder import GAEEncoder, GAEDecoder, GraphAutoencoder
+from tqdm import tqdm
 
 # Load the dataset
 graph_dataset = torch.load("../Dataset/graph_dataset.pt")
@@ -14,48 +17,7 @@ train_loader = DataLoader(train_data, batch_size=32, shuffle=True)
 val_loader = DataLoader(val_data, batch_size=32, shuffle=False)
 test_loader = DataLoader(test_data, batch_size=32, shuffle=False)
 
-
-
-import torch.nn as nn
-import torch.nn.functional as F
-from torch_geometric.nn import GCNConv
-
-class GAEEncoder(nn.Module):
-    def __init__(self, in_channels, hidden_channels, out_channels):
-        super(GAEEncoder, self).__init__()
-        self.conv1 = GCNConv(in_channels, hidden_channels)
-        self.conv2 = GCNConv(hidden_channels, out_channels)
-    
-    def forward(self, x, edge_index):
-        x = F.relu(self.conv1(x, edge_index))
-        x = F.relu(self.conv2(x, edge_index))
-        return x
-
-class GAEDecoder(nn.Module):
-    def __init__(self, in_channels, hidden_channels, out_channels):
-        super(GAEDecoder, self).__init__()
-        self.conv1 = GCNConv(in_channels, hidden_channels)
-        self.conv2 = GCNConv(hidden_channels, out_channels)
-    
-    def forward(self, x, edge_index):
-        x = F.relu(self.conv1(x, edge_index))
-        x = self.conv2(x, edge_index)
-        return x
-
-class GraphAutoencoder(nn.Module):
-    def __init__(self, encoder, decoder):
-        super(GraphAutoencoder, self).__init__()
-        self.encoder = encoder
-        self.decoder = decoder
-    
-    def forward(self, x, edge_index):
-        z = self.encoder(x, edge_index)
-        x_recon = self.decoder(z, edge_index)
-        return x_recon
-
-
-import os
-
+## Training, validating and testing the auto encoder. 
 def train(model, loader, optimizer, criterion):
     model.train()
     total_loss = 0
@@ -89,16 +51,15 @@ def test(model, loader, criterion):
     return total_loss / len(loader)
 
 
-from itertools import product
-
 # Hyperparameter ranges
+vectorSizeRange = [4096, 8192]
 hidden_channels_range = [512, 1024]
 learning_rate_range = [0.001, 0.0001]
 weight_decay_range = [0, 1e-5]
 epochs_range = [50]
 
 # Create combinations of all hyperparameters
-hyperparameters = product(hidden_channels_range, learning_rate_range, weight_decay_range, epochs_range)
+hyperparameters = product(hidden_channels_range, learning_rate_range, weight_decay_range, epochs_range, vectorSizeRange)
 
 # Create a directory to save models and results
 os.makedirs("../models", exist_ok=True)
@@ -111,10 +72,10 @@ if os.path.exists(results_file):
 else:
     results = []
 
-for hidden_channels, lr, wd, epochs in hyperparameters:
+for hidden_channels, lr, wd, epochs, vectorSize in hyperparameters:
     # Define model, optimizer, and loss function
-    encoder = GAEEncoder(in_channels=4, hidden_channels=hidden_channels, out_channels=4096)
-    decoder = GAEDecoder(in_channels=4096, hidden_channels=hidden_channels, out_channels=4)
+    encoder = GAEEncoder(in_channels=4, hidden_channels=hidden_channels, out_channels=vectorSize)
+    decoder = GAEDecoder(in_channels=vectorSize, hidden_channels=hidden_channels, out_channels=4)
     model = GraphAutoencoder(encoder, decoder)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=wd)
@@ -125,7 +86,7 @@ for hidden_channels, lr, wd, epochs in hyperparameters:
 
     # Train the model
     best_val_loss = float('inf')
-    for epoch in range(epochs):
+    for epoch in tqdm(range(epochs)):
         train_loss = train(model, train_loader, optimizer, criterion)
         val_loss = validate(model, val_loader, criterion)
         print(f"Epoch {epoch+1}/{epochs}, Train Loss: {train_loss}, Validation Loss: {val_loss}")
@@ -138,7 +99,7 @@ for hidden_channels, lr, wd, epochs in hyperparameters:
     
     # Test the model
     test_loss = test(model, test_loader, criterion)
-    print(f"Test Loss: {test_loss}")
+    print("Test Loss:", test_loss)
 
     # Save results
     result = {
