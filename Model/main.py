@@ -5,6 +5,7 @@ import json, os
 from itertools import product
 from autoencoder import GAEEncoder, GAEDecoder, GraphAutoencoder
 from tqdm import tqdm
+import torch.nn as nn
 
 # Load the dataset
 graph_dataset = torch.load("../Dataset/graph_dataset.pt")
