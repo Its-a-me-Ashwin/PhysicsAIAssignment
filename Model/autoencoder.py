@@ -7,6 +7,7 @@ class GAEEncoder(nn.Module):
         super(GAEEncoder, self).__init__()
         self.conv1 = GCNConv(in_channels, hidden_channels)
         self.conv2 = GCNConv(hidden_channels, out_channels)
+        self.encodedVectorSize = out_channels
     
     def forward(self, x, edge_index):
         x = F.relu(self.conv1(x, edge_index))
@@ -18,6 +19,7 @@ class GAEDecoder(nn.Module):
         super(GAEDecoder, self).__init__()
         self.conv1 = GCNConv(in_channels, hidden_channels)
         self.conv2 = GCNConv(hidden_channels, out_channels)
+        self.in_channels = out_channels
     
     def forward(self, x, edge_index):
         x = F.relu(self.conv1(x, edge_index))
