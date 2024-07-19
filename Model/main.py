@@ -53,9 +53,9 @@ def test(model, loader, criterion):
 
 
 # Hyperparameter ranges
-vectorSizeRange = [4096, 8192]
+vectorSizeRange = [512, 1024, 2048]
 hidden_channels_range = [8192, 16384]
-learning_rate_range = [0.001, 0.0001]
+learning_rate_range = [0.005, 0.0005]
 weight_decay_range = [0, 1e-5]
 epochs_range = [50]
 
