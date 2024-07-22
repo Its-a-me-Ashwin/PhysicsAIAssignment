@@ -11,8 +11,8 @@ from torch_geometric.utils import dense_to_sparse
 from particle import Particle
 
 # Screen dimensions
-screen_width = 1240
-screen_height = 800
+screen_width = 640
+screen_height = 480
 
 # Parameters for the simulation
 gravityY = 0  # 1500
@@ -28,7 +28,7 @@ RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 
 # Some parameters for the particles
-numParticles = 196
+numParticles = 50
 sRadius = 40
 SVolume = math.pi * (sRadius**4) / 6
 BOXSize = [screen_width, screen_height]
@@ -229,7 +229,7 @@ class Simulation:
 
                     if event.key == pygame.K_a:
                         self.AIControl = not self.AIControl
-
+## LKM
                     if event.key == pygame.K_s:
                         self.inputToModel = np.array(self.inputToModel)
                         self.outputToModel = np.array(self.outputToModel)
