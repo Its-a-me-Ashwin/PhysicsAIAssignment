@@ -2,6 +2,8 @@ import torch
 from autoencoder import *
 from torch_geometric.data import Data
 
+graph_dataset = torch.load("../Dataset/graph_dataset.pt")
+
 def create_encoded_dataset(graph_dataset, encoder, device='cpu'):
     # Ensure the encoder is in evaluation mode
     encoder.eval()
