@@ -12,6 +12,13 @@ encoded_size = 512
 hidden_channels = 200
 in_channels = 4
 
+device = "cpu"
+if torch.cuda.is_available():
+    torch.device("cuda")
+    device = "cuda"
+else:
+    torch.device("cpu")
+
 ## Load the dataset
 # Load the data from the .pt file
 data = torch.load("../Dataset/kanDataSet.pt")
@@ -28,10 +35,10 @@ def split_encoded_dataset(encoded_dataset, train_fraction):
 
     # Create the dictionary with the desired keys
     data_split = {
-        'train_input': train_input,
-        'test_input': test_input,
-        'train_output': train_output,
-        'test_output': test_output
+        'train_input': train_input.to(device),
+        'test_input': test_input.to(device),
+        'train_output': train_output.to(device),
+        'test_output': test_output.to(device)
     }
 
     return data_split
