@@ -25,8 +25,8 @@ data = torch.load("../Dataset/kanDataSet.pt")
 
 def split_encoded_dataset(encoded_dataset, train_fraction):
     # Extract the inputs and outputs for splitting
-    inputs = [data.x for data in encoded_dataset]
-    outputs = [data.y for data in encoded_dataset]
+    inputs = torch.stack([data.x for data in encoded_dataset])
+    outputs = torch.stack([data.y for data in encoded_dataset])
 
     # Split the data into train and test sets
     train_input, test_input, train_output, test_output = train_test_split(
