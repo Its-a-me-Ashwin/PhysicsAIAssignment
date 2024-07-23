@@ -54,4 +54,4 @@ trained_encoder.load_state_dict(encoder_state_dict)
 
 new_dataset = create_encoded_dataset(graph_dataset, trained_encoder, device=device)
 
-torch.save(new_dataset, "./Dataset/kanDataSet.pt")
+torch.save(new_dataset, "../Dataset/kanDataSet.pt")
