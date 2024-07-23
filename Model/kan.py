@@ -16,26 +16,27 @@ in_channels = 4
 # Load the data from the .pt file
 data = torch.load("../Dataset/kanDataSet.pt")
 
-# Assuming data is a dictionary with keys "input" and "output"
-inputs = data['input']
-outputs = data['output']
+def split_encoded_dataset(encoded_dataset, train_fraction):
+    # Extract the inputs and outputs for splitting
+    inputs = [data.x for data in encoded_dataset]
+    outputs = [data.y for data in encoded_dataset]
 
-# Define the fraction for train/test split
-train_fraction = 0.8  # for example, 80% train, 20% test
+    # Split the data into train and test sets
+    train_input, test_input, train_output, test_output = train_test_split(
+        inputs, outputs, train_size=train_fraction, random_state=42
+    )
 
-# Split the data into train and test sets
-train_input, test_input, train_output, test_output = train_test_split(
-    inputs, outputs, train_size=train_fraction, random_state=42
-)
+    # Create the dictionary with the desired keys
+    data_split = {
+        'train_input': train_input,
+        'test_input': test_input,
+        'train_output': train_output,
+        'test_output': test_output
+    }
 
-# Create the dictionary with the desired keys
-data_split = {
-    'train_input': train_input,
-    'test_input': test_input,
-    'train_output': train_output,
-    'test_output': test_output
-}
+    return data_split
 
+dataset = split_encoded_dataset(data, 0.8)
 
 ## Define the model.
 intermediateKANModel = KAN(width=[encoded_size, hidden_channels, encoded_size], grid=20, k=3, seed=0)
