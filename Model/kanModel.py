@@ -8,7 +8,7 @@ from tqdm import tqdm
 from kan import *
 
 ## Set the 
-encoded_size = 512
+encoded_size = 16
 hidden_channels = 200
 in_channels = 4
 
@@ -21,7 +21,7 @@ else:
 
 ## Load the dataset
 # Load the data from the .pt file
-data = torch.load("../Dataset/kanDataSet.pt")
+data = torch.load("../Dataset/kanDataSet.pt", map_location=torch.device(device))
 
 def split_encoded_dataset(encoded_dataset, train_fraction):
     # Extract the inputs and outputs for splitting
@@ -44,6 +44,10 @@ def split_encoded_dataset(encoded_dataset, train_fraction):
     return data_split
 
 dataset = split_encoded_dataset(data, 0.8)
+
+# print(dataset["train_input"].shape)
+# print(dataset["test_input"].shape)
+
 
 ## Define the model.
 intermediateKANModel = KAN(width=[encoded_size, hidden_channels, encoded_size], grid=20, k=3, seed=0)

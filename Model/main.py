@@ -3,9 +3,11 @@ from torch_geometric.data import DataLoader
 from sklearn.model_selection import train_test_split
 import json, os
 from itertools import product
-from autoencoder import GAEEncoder, GAEDecoder, GraphAutoencoder
 from tqdm import tqdm
 import torch.nn as nn
+
+# Import the new GATEncoder and GATDecoder classes
+from autoencoder import GATEncoder, GATDecoder, GraphAutoencoder
 
 # Load the dataset
 graph_dataset = torch.load("../Dataset/graph_dataset.pt")
@@ -18,7 +20,7 @@ train_loader = DataLoader(train_data, batch_size=32, shuffle=True)
 val_loader = DataLoader(val_data, batch_size=32, shuffle=False)
 test_loader = DataLoader(test_data, batch_size=32, shuffle=False)
 
-## Training, validating and testing the auto encoder. 
+# Training, validating, and testing functions
 def train(model, loader, optimizer, criterion):
     model.train()
     total_loss = 0
@@ -51,9 +53,8 @@ def test(model, loader, criterion):
             total_loss += loss.item()
     return total_loss / len(loader)
 
-
 # Hyperparameter ranges
-vectorSizeRange = [512, 1024, 2048]
+vectorSizeRange = [16, 32, 64]
 hidden_channels_range = [8192, 16384]
 learning_rate_range = [0.005, 0.0005]
 weight_decay_range = [0, 1e-5]
@@ -75,21 +76,24 @@ else:
 
 for hidden_channels, lr, wd, epochs, vectorSize in hyperparameters:
     # Define model, optimizer, and loss function
-    encoder = GAEEncoder(in_channels=4, hidden_channels=hidden_channels, out_channels=vectorSize)
-    decoder = GAEDecoder(in_channels=vectorSize, hidden_channels=hidden_channels, out_channels=4)
+    encoder = GATEncoder(in_channels=4, hidden_channels=hidden_channels, out_channels=vectorSize)
+    decoder = GATDecoder(in_channels=vectorSize, hidden_channels=hidden_channels, out_channels=4)
     model = GraphAutoencoder(encoder, decoder)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=wd)
-
-    ## Use MSE loss. We can use the L1 norm too..
-    ## Try using this in the hyper parameter list to00
     criterion = nn.MSELoss()
+
+    # Track losses for each epoch
+    train_losses = []
+    val_losses = []
 
     # Train the model
     best_val_loss = float('inf')
     for epoch in tqdm(range(epochs)):
         train_loss = train(model, train_loader, optimizer, criterion)
         val_loss = validate(model, val_loader, criterion)
+        train_losses.append(train_loss)
+        val_losses.append(val_loss)
         print(f"Epoch {epoch+1}/{epochs}, Train Loss: {train_loss}, Validation Loss: {val_loss}")
 
         # Save the model if it has the best validation loss so far
@@ -110,7 +114,9 @@ for hidden_channels, lr, wd, epochs, vectorSize in hyperparameters:
         "epochs": epochs,
         "best_val_loss": best_val_loss,
         "test_loss": test_loss,
-        "model_path": best_model_path
+        "model_path": best_model_path,
+        "train_losses": train_losses,
+        "val_losses": val_losses
     }
     results.append(result)
 

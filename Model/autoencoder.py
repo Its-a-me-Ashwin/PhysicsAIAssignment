@@ -1,28 +1,28 @@
 import torch.nn as nn
 import torch.nn.functional as F
-from torch_geometric.nn import GCNConv
+from torch_geometric.nn import GATConv
 
-class GAEEncoder(nn.Module):
-    def __init__(self, in_channels, hidden_channels, out_channels):
-        super(GAEEncoder, self).__init__()
-        self.conv1 = GCNConv(in_channels, hidden_channels)
-        self.conv2 = GCNConv(hidden_channels, out_channels)
+class GATEncoder(nn.Module):
+    def __init__(self, in_channels, hidden_channels, out_channels, heads=1):
+        super(GATEncoder, self).__init__()
+        self.conv1 = GATConv(in_channels, hidden_channels, heads=heads)
+        self.conv2 = GATConv(hidden_channels * heads, out_channels, heads=heads)
         self.encodedVectorSize = out_channels
     
     def forward(self, x, edge_index):
-        x = F.relu(self.conv1(x, edge_index))
-        x = F.relu(self.conv2(x, edge_index))
+        x = F.elu(self.conv1(x, edge_index))
+        x = F.elu(self.conv2(x, edge_index))
         return x
 
-class GAEDecoder(nn.Module):
-    def __init__(self, in_channels, hidden_channels, out_channels):
-        super(GAEDecoder, self).__init__()
-        self.conv1 = GCNConv(in_channels, hidden_channels)
-        self.conv2 = GCNConv(hidden_channels, out_channels)
+class GATDecoder(nn.Module):
+    def __init__(self, in_channels, hidden_channels, out_channels, heads=1):
+        super(GATDecoder, self).__init__()
+        self.conv1 = GATConv(in_channels, hidden_channels, heads=heads)
+        self.conv2 = GATConv(hidden_channels * heads, out_channels, heads=1)
         self.in_channels = out_channels
     
     def forward(self, x, edge_index):
-        x = F.relu(self.conv1(x, edge_index))
+        x = F.elu(self.conv1(x, edge_index))
         x = self.conv2(x, edge_index)
         return x
 
