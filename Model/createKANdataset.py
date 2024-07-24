@@ -41,7 +41,7 @@ def create_encoded_dataset(graph_dataset, encoder, device='cpu'):
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
-trained_encoder = GAEEncoder(in_channels=4, hidden_channels=8192, out_channels=512)
+trained_encoder = GATEncoder(in_channels=4, hidden_channels=8192, out_channels=512)
 
 # Load the full state dictionary
 full_state_dict = torch.load("../models/model_h8192_lr0.005_wd0_e50.pt")
