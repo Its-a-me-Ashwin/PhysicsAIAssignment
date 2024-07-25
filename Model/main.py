@@ -58,10 +58,11 @@ vectorSizeRange = [64, 128, 256]
 hidden_channels_range = [1034, 2048, 4096, 8192]
 learning_rate_range = [0.001, 0.0001]
 weight_decay_range = [0, 1e-5]
-epochs_range = [25, 50]
+maxEpochs = 50
+saveEpochOn = 10
 
 # Create combinations of all hyperparameters
-hyperparameters = product(hidden_channels_range, learning_rate_range, weight_decay_range, epochs_range, vectorSizeRange)
+hyperparameters = product(hidden_channels_range, learning_rate_range, weight_decay_range, vectorSizeRange)
 
 # Create a directory to save models and results
 os.makedirs("../models", exist_ok=True)
@@ -74,7 +75,7 @@ if os.path.exists(results_file):
 else:
     results = []
 
-for hidden_channels, lr, wd, epochs, vectorSize in hyperparameters:
+for hidden_channels, lr, wd, vectorSize in hyperparameters:
     # Define model, optimizer, and loss function
     encoder = GATEncoder(in_channels=4, hidden_channels=hidden_channels, out_channels=vectorSize)
     decoder = GATDecoder(in_channels=vectorSize, hidden_channels=hidden_channels, out_channels=4)
@@ -89,7 +90,7 @@ for hidden_channels, lr, wd, epochs, vectorSize in hyperparameters:
 
     # Train the model
     best_val_loss = float('inf')
-    for epoch in tqdm(range(epochs)):
+    for epoch in tqdm(range(maxEpochs)):
         train_loss = train(model, train_loader, optimizer, criterion)
         val_loss = validate(model, val_loader, criterion)
         train_losses.append(train_loss)
@@ -97,9 +98,9 @@ for hidden_channels, lr, wd, epochs, vectorSize in hyperparameters:
         print(f"Epoch {epoch+1}/{epochs}, Train Loss: {train_loss}, Validation Loss: {val_loss}")
 
         # Save the model if it has the best validation loss so far
-        if val_loss < best_val_loss:
+        if val_loss < best_val_loss or (epocsh + 1) % saveEpochOn == 0:
             best_val_loss = val_loss
-            best_model_path = f"../models/model_h{hidden_channels}_lr{lr}_wd{wd}_e{epochs}.pt"
+            best_model_path = f"../models/model_h{hidden_channels}_lr{lr}_wd{wd}_e{epoch}.pt"
             torch.save(model.state_dict(), best_model_path)
     
     # Test the model
@@ -111,7 +112,6 @@ for hidden_channels, lr, wd, epochs, vectorSize in hyperparameters:
         "hidden_channels": hidden_channels,
         "learning_rate": lr,
         "weight_decay": wd,
-        "epochs": epochs,
         "best_val_loss": best_val_loss,
         "test_loss": test_loss,
         "model_path": best_model_path,
