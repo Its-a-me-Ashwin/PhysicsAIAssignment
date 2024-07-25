@@ -54,11 +54,11 @@ def test(model, loader, criterion):
     return total_loss / len(loader)
 
 # Hyperparameter ranges
-vectorSizeRange = [16, 32, 64]
-hidden_channels_range = [8192, 16384]
-learning_rate_range = [0.005, 0.0005]
+vectorSizeRange = [64, 128, 256]
+hidden_channels_range = [1034, 2048, 4096, 8192]
+learning_rate_range = [0.001, 0.0001]
 weight_decay_range = [0, 1e-5]
-epochs_range = [50]
+epochs_range = [25, 50]
 
 # Create combinations of all hyperparameters
 hyperparameters = product(hidden_channels_range, learning_rate_range, weight_decay_range, epochs_range, vectorSizeRange)
