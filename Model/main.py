@@ -95,12 +95,13 @@ for hidden_channels, lr, wd, vectorSize in hyperparameters:
         val_loss = validate(model, val_loader, criterion)
         train_losses.append(train_loss)
         val_losses.append(val_loss)
-        print(f"Epoch {epoch+1}/{epochs}, Train Loss: {train_loss}, Validation Loss: {val_loss}")
+        print(f"Epoch {epoch+1}/{maxEpochs}, Train Loss: {train_loss}, Validation Loss: {val_loss}")
 
-        # Save the model if it has the best validation loss so far
-        if val_loss < best_val_loss or (epocsh + 1) % saveEpochOn == 0:
-            best_val_loss = val_loss
-            best_model_path = f"../models/model_h{hidden_channels}_lr{lr}_wd{wd}_e{epoch}.pt"
+        # Save the model if it has the best validation loss so far or every saveEpochOn epochs
+        if val_loss < best_val_loss or (epoch + 1) % saveEpochOn == 0:
+            if val_loss < best_val_loss:
+                best_val_loss = val_loss
+            best_model_path = f"../models/model_h{hidden_channels}_lr{lr}_wd{wd}_e{epoch+1}.pt"
             torch.save(model.state_dict(), best_model_path)
     
     # Test the model
