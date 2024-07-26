@@ -63,7 +63,7 @@ def createDataSet(modelName):
     
     # Extract the encoder part of the state dictionary
     encoder_state_dict = {k.replace("encoder.", ""): v for k, v in full_state_dict.items() if k.startswith("encoder.")}
-    trained_encoder = GATEncoder(in_channels=4, hidden_channels=hiddenChannels, out_channels=vector_size)
+    trained_encoder = GATEncoder(in_channels=4, hidden_channels=int(hiddenChannels), out_channels=int(vector_size))
 
     # Load the encoder state dictionary into the encoder model
     trained_encoder.load_state_dict(encoder_state_dict)
