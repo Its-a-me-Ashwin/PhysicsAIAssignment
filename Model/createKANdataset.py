@@ -40,7 +40,7 @@ def create_encoded_dataset(graph_dataset, encoder, device='cpu'):
 
 def createDataSet(modelName):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    trained_encoder = GAEEncoder(in_channels=4, hidden_channels=8192, out_channels=512)
+    trained_encoder = GAEEncoder(in_channels=4, hidden_channels=1034, out_channels=256)
     full_state_dict = torch.load("../models/model_h1034_lr0.0001_wd1e-05_e50.pt")
 
     # Extract the encoder part of the state dictionary
