@@ -1,6 +1,7 @@
 import torch
 from autoencoder import *
 from torch_geometric.data import Data
+import re
 
 graph_dataset = torch.load("../Dataset/graph_dataset.pt")
 
