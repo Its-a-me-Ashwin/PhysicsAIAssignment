@@ -3,7 +3,6 @@ from torch_geometric.data import DataLoader
 from sklearn.model_selection import train_test_split
 import json, os
 from itertools import product
-from autoencoder import GAEEncoder, GAEDecoder, GraphAutoencoder
 from tqdm import tqdm
 from kan import *
 
