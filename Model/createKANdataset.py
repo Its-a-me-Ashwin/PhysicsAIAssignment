@@ -37,21 +37,18 @@ def create_encoded_dataset(graph_dataset, encoder, device='cpu'):
     
     return new_dataset
 
-# Example usage
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+def createDataSet(modelName):
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    trained_encoder = GAEEncoder(in_channels=4, hidden_channels=8192, out_channels=512)
+    full_state_dict = torch.load("../models/model_h1034_lr0.0001_wd1e-05_e50.pt")
 
-trained_encoder = GAEEncoder(in_channels=4, hidden_channels=8192, out_channels=512)
+    # Extract the encoder part of the state dictionary
+    encoder_state_dict = {k.replace("encoder.", ""): v for k, v in full_state_dict.items() if k.startswith("encoder.")}
 
-# Load the full state dictionary
-full_state_dict = torch.load("../models/model_h8192_lr0.005_wd0_e50.pt")
+    # Load the encoder state dictionary into the encoder model
+    trained_encoder.load_state_dict(encoder_state_dict)
 
-# Extract the encoder part of the state dictionary
-encoder_state_dict = {k.replace("encoder.", ""): v for k, v in full_state_dict.items() if k.startswith("encoder.")}
+    new_dataset = create_encoded_dataset(graph_dataset, trained_encoder, device=device)
 
-# Load the encoder state dictionary into the encoder model
-trained_encoder.load_state_dict(encoder_state_dict)
-
-new_dataset = create_encoded_dataset(graph_dataset, trained_encoder, device=device)
-
-torch.save(new_dataset, "../Dataset/kanDataSet.pt")
+    torch.save(new_dataset, "../Dataset/kanDataSet.pt")
