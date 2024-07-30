@@ -12,7 +12,7 @@ def plot_and_save_results(json_file, output_dir='plots'):
     # Extract data ignoring the weight decay
     data = {}
     for entry in results:
-        key = (entry['hidden_channels'], entry['learning_rate'], entry['vectorSize'], entry['epochs'])
+        key = (entry['hidden_channels'], entry['learning_rate'], entry['encodeed_size'], entry['epochs'])
         data[key] = {
             'train_losses': entry['train_losses'],
             'val_losses': entry['val_losses'],
