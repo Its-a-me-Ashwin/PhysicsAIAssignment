@@ -61,7 +61,6 @@ def createDataSet(modelName):
         print("Invalid file name.")
         return 
     
-    # Extract the encoder part of the state dictionary
     encoder_state_dict = {k.replace("encoder.", ""): v for k, v in full_state_dict.items() if k.startswith("encoder.")}
     trained_encoder = GATEncoder(in_channels=4, hidden_channels=int(hiddenChannels), out_channels=int(vector_size))
 
@@ -74,5 +73,5 @@ def createDataSet(modelName):
 
 
 if __name__ == "__main__":
-    modelPath = "../models/model_h1034_lr0.001_vec64_wd0_e4.pt"
+    modelPath = "../models/model_h1034_lr0.0001_vec64_wd0_e4.pt"
     createDataSet(modelPath)
