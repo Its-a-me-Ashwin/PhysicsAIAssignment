@@ -7,7 +7,7 @@ from tqdm import tqdm
 from kan import *
 
 ## Set the 
-encoded_size = 16
+encoded_size = 1034
 hidden_channels = 200
 in_channels = 4
 
