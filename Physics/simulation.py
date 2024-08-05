@@ -190,9 +190,13 @@ class Simulation:
                     particle.velocity[1] += gravityY * dt
                     particle.velocity[0] += gravityX * dt
                 else:
+                    #################YOUR CODE HERE #######################################
+
                     ## Add your code here or call a function here that acomplishes the task.
                     ## Input to the AI model can include the current state of the particles and the prvious states
                     ## The output of the model will be to give the new veloities of the particles after the elapsed time dt.
+                    
+                    ## Feel free to move the the call to the self.AI function outside the loop if necessary to increase efficiency. 
                     predictedVelocity = self.AI(self.Particles)
                     particle.velocity[0] -= predictedVelocity[idx][0]
                     particle.velocity[1] -= predictedVelocity[idx][1]
