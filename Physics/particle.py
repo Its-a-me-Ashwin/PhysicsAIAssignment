@@ -1,6 +1,11 @@
 import random
+import numpy as np
+import matplotlib.pyplot as plt
 
+
+## Class to represent every particle in the simulation.
 class Particle:
+    ## Initializes every particle
     def __init__(self, x, y, radius=3, mass=1, color=(255,255,255)) -> None:
         self.color = color
         self.radius = radius
@@ -14,6 +19,7 @@ class Particle:
         self.gradient = 0   
 
 
+    ## For debugging purposes.
     def __repr__(self) -> str:
         return "Density: " + str(self.density) + " Acc: " + str(self.accelaration)
 
@@ -30,6 +36,7 @@ class Particle:
             particles.append(particle)
         return particles
     
+    ## Method to color the particles.
     @staticmethod
     def getVelColor(value, maxAbsVel):
         # Ensure value is in the range [0, maxAbsVel]
@@ -45,7 +52,8 @@ class Particle:
         # The green component is always 0
         green = 0
         return (red, green, blue)
-    
+
+    ## Generates an initial state of praticles where they are placed in a grid like format. 
     @staticmethod
     def generateGridParticles(spacing, numParticles, boxSize):
         particles = []
@@ -73,3 +81,29 @@ class Particle:
                 break
 
         return particles
+
+    ## Generates particles with velocities following Maxwell-Boltzmann distribution
+    @staticmethod
+    def generateMaxwellBoltzmannParticles(numParticles, boxSize, alpha):
+        particles = []
+        for _ in range(numParticles):
+            x = random.uniform(0, boxSize[0])
+            y = random.uniform(0, boxSize[1])
+            velocity_x = random.gauss(0, alpha)
+            velocity_y = random.gauss(0, alpha)
+            particle = Particle(x, y)
+            particle.velocity = [velocity_x, velocity_y]
+            particles.append(particle)
+        return particles
+
+    ## Plots the velocity distribution of particles
+    @staticmethod
+    def plotVelocityDistribution(particles, filename="../plots/velocity_distribution.png"):
+        velocities = [np.linalg.norm(p.velocity) for p in particles]
+        plt.hist(velocities, bins=30, density=True)
+        plt.title('Velocity Distribution')
+        plt.xlabel('Velocity')
+        plt.ylabel('Frequency')
+        plt.grid(True)
+        plt.savefig(filename)
+        plt.show()

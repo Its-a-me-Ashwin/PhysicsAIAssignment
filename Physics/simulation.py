@@ -123,7 +123,9 @@ class Simulation:
             particle.velocity[1] += (particle.position[1] - samplePoint[1]) * strength
 
     def setup(self):
-        self.Particles = Particle.generateGridParticles(20, numParticles, BOXSize)
+        self.Particles = Particle.generateMaxwellBoltzmannParticles(numParticles, BOXSize, 5)
+        Particle.plotVelocityDistribution(self.Particles)
+        #self.Particles = Particle.generateGridParticles(20, numParticles, BOXSize)
 
     def create_graph_data(self):
         particle_data = []
@@ -151,6 +153,13 @@ class Simulation:
 
         graph_data = Data(x=node_features, edge_index=edge_index, edge_attr=edge_attr, y=node_features)
         self.graphData.append(graph_data)
+
+    def create_graph_pairs(self):
+        self.graphPairs = []
+        for t in range(len(self.graphData) - 1):
+            x = self.graphData[t]
+            y = self.graphData[t + 1]
+            self.graphPairs.append(Data(x=x.x, edge_index=x.edge_index, edge_attr=x.edge_attr, y=y.x))
 
     def update(self):
         if self.running_simulation:
@@ -231,10 +240,26 @@ class Simulation:
                         self.AIControl = not self.AIControl
 ## LKM
                     if event.key == pygame.K_s:
+                        ## The following segment creates a data set that can be used by an auto encoder of sorts. 
+                        ## It saves a graph dataset with identical inputs and outputs/ 
+                        ## Each node represents a particle and has a the following properties:
+                        ## PosX, PosY, VexX, VelY
                         self.inputToModel = np.array(self.inputToModel)
                         self.outputToModel = np.array(self.outputToModel)
                         torch.save(self.graphData, "../Dataset/graph_dataset.pt")
+                        
+                        ## This segment creates a dataset similar to tha one above, but the input is the graph representation of a frame 
+                        ## at time t and the output is the graph representation at time t+1. Can again be used by an basic auto encoder.
+                        self.create_graph_pairs()
+                        torch.save(self.graphPairs, "../Dataset/graph_dataset_naive.pt")
 
+                        ## This segment creates the most basic dataset of them all. 
+                        ## Each input entry has the following structure:
+                        ## [gravityX, gravityY, targetDensity, pressureMultiplier, 
+                        ## particle1PosX, particle1PosY, particle1Vel1, particle1Vel2,
+                        ## particle2PosX, particle2PosY, particle2Vel1, particle2Vel2,
+                        ## .... In our case the number of particles are kept constant.
+                        ## ]
                         np.save("../Dataset/input.npy", self.inputToModel)
                         np.save("../Dataset/output.npy", self.outputToModel)
                         self.recording = False
@@ -278,5 +303,10 @@ class Simulation:
         sys.exit()
 
 if __name__ == "__main__":
+    ## This is to plot the original distribution of the speeds of the particles. 
+    ## Used to generate the graphs orginally.
+    # if False:
+    #     p = Particle.generateMaxwellBoltzmannParticles(10000, BOXSize, 4)
+    #     Particle.plotVelocityDistribution(p)
     simulation = Simulation()
     simulation.run()
