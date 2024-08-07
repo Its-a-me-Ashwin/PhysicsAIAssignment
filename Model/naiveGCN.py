@@ -7,7 +7,7 @@ from tqdm import tqdm
 import torch.nn as nn
 
 # Import the new GATEncoder and GATDecoder classes
-from GATautoencoder import GATEncoder, GATDecoder, GraphAutoencoder
+from GCNautoencoder import GCNEncoder, GCNDecoder, GraphAutoencoder
 
 # Load the dataset
 graph_dataset = torch.load("../Dataset/graph_dataset_naive.pt")

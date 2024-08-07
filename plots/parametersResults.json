@@ -1,0 +1,25 @@
+GCN params h: 1034 o: 1034 params: 142820 Loss: 3759
+GCN params h: 1034 o: 1034 params: 275300 Loss: 3436
+GCN params h: 1034 o: 1034 params: 540260 Loss: 2155
+GCN params h: 2048 o: 2048 params: 282752 Loss: 3484
+GCN params h: 2048 o: 2048 params: 545024 Loss: 2268
+GCN params h: 2048 o: 2048 params: 1069568 Loss: 2148
+GCN params h: 4096 o: 4096 params: 565376 Loss: 2105
+GCN params h: 4096 o: 4096 params: 1089792 Loss: 2102
+GCN params h: 4096 o: 4096 params: 2138624 Loss: 2109
+GCN params h: 8192 o: 8192 params: 1130624 Loss: 2096
+GCN params h: 8192 o: 8192 params: 2179328 Loss: 2084
+GCN params h: 8192 o: 8192 params: 4276736 Loss: 2102
+
+GAT params h: 1034 o: 1034 params: 147212.0 Loss: 3476
+GAT params h: 1034 o: 1034 params: 279948.0 Loss: 3450
+GAT params h: 1034 o: 1034 params: 545420.0 Loss: 2173
+GAT params h: 2048 o: 2048 params: 291200.0 Loss: 2096
+GAT params h: 2048 o: 2048 params: 553728.0 Loss: 2097
+GAT params h: 2048 o: 2048 params: 1078784.0 Loss: 2115
+GAT params h: 4096 o: 4096 params: 582016.0 Loss: 2107
+GAT params h: 4096 o: 4096 params: 1106688.0 Loss: 2120
+GAT params h: 4096 o: 4096 params: 2156032.0 Loss: 2083
+GAT params h: 8192 o: 8192 params: 1163648.0 Loss: 2100
+GAT params h: 8192 o: 8192 params: 2212608.0 Loss: 2095
+GAT params h: 8192 o: 8192 params: 4310528.0 Loss: 2088

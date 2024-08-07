@@ -1,12 +1,22 @@
-from simulation import Simulation
+import torch
+from torch_geometric.data import DataLoader
+from sklearn.model_selection import train_test_split
+import json, os
+from itertools import product
+from tqdm import tqdm
+import torch.nn as nn
+from torch_geometric.data import Data
 
 
-def example_AI_model(particles):
-    output = []
-    for p in particles:
-        newVel = (0, 0)
-        output.append(newVel)
-    return output
+graph_dataset = torch.load("../Dataset/graph_dataset.pt")
 
-s = Simulation(example_AI_model)
-s.run()
+def create_graph_pairs(graphData):
+    graphPairs = []
+    for t in range(len(graphData) - 1):
+        x = graphData[t]
+        y = graphData[t + 1]
+        graphPairs.append(Data(x=x.x, edge_index=x.edge_index, edge_attr=x.edge_attr, y=y.x))
+    return graphPairs
+
+graph_dataset_naive = create_graph_pairs(graph_dataset)
+torch.save(graph_dataset_naive, "../Dataset/graph_dataset_naive.pt")

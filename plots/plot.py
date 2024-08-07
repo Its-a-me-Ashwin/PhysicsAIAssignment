@@ -12,7 +12,7 @@ def plot_and_save_results(json_file, output_dir='plots'):
     # Extract data ignoring the weight decay
     data = {}
     for entry in results:
-        key = (entry['hidden_channels'], entry['learning_rate'], entry['encodeed_size'], entry['epochs'])
+        key = (entry['hidden_channels'], entry['learning_rate'], entry.get('encodeed_size', "512"), len(entry['train_losses']))
         data[key] = {
             'train_losses': entry['train_losses'],
             'val_losses': entry['val_losses'],
@@ -40,5 +40,25 @@ def plot_and_save_results(json_file, output_dir='plots'):
         plt.close(fig)
 
 
+
+def plotResults():
+    pass
+
+def plotKANData():
+    pass
+
+def calculateRMSEOverFrames(dataFile=""):
+
+    X = [data]
+    Y = 
+    
+
+    plt.plot()
+    plt.save()
+    pass
+
+def calculateLossPerParticle():
+    pass
+
 if __name__ == "__main__":
-    plot_and_save_results('../models/results.json')
+    plot_and_save_results('./results.json')

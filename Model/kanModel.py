@@ -44,9 +44,8 @@ def split_encoded_dataset(encoded_dataset, train_fraction):
 
 dataset = split_encoded_dataset(data, 0.8)
 
-# print(dataset["train_input"].shape)
-# print(dataset["test_input"].shape)
-
+print(dataset["train_input"].shape)
+print(dataset["test_input"].shape)
 
 ## Define the model.
 intermediateKANModel = KAN(width=[encoded_size, hidden_channels, encoded_size], grid=20, k=3, seed=0)
