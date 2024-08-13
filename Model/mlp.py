@@ -7,6 +7,26 @@ import json, os
 from itertools import product
 from tqdm import tqdm
 
+def createMLPDataset(kanDatasetPath):
+    # Load the graph dataset
+    kan_dataset = torch.load(kanDatasetPath)
+    
+    inputs = []
+    targets = []
+    
+    for data in kan_dataset:
+        inputs.append(data.x)  # Add the node feature matrix (input)
+        targets.append(data.y)  # Add the target feature matrix
+        
+    # Convert lists to tensors
+    inputs = torch.stack(inputs)
+    targets = torch.stack(targets)
+    
+    # Create TensorDataset for use with DataLoader
+    mlp_dataset = TensorDataset(inputs, targets)
+    
+    return mlp_dataset
+
 # Define MLP model
 class MLP(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
@@ -20,7 +40,7 @@ class MLP(nn.Module):
         return x
 
 # Load the dataset (assuming it is a tensor dataset)
-dataset = torch.load("../Dataset/kanDataSet.pt")
+dataset = createMLPDataset("../Dataset/kanDataSet.pt")
 
 # Split dataset into train, validation, and test sets
 train_val_data, test_data = train_test_split(dataset, test_size=0.2, random_state=42)
@@ -66,72 +86,74 @@ def test(model, loader, criterion):
             total_loss += loss.item()
     return total_loss / len(loader)
 
-# Hyperparameter ranges
-hidden_size_range = [64, 128, 256]
-learning_rate_range = [0.001, 0.0001]
-weight_decay_range = [0, 1e-5]
-max_epochs = 50
-save_epoch_on = 10
+if __name__ == "__main__":    
+    # Hyperparameter ranges
+    hidden_size_range = [64, 128, 256]
+    learning_rate_range = [0.001, 0.0001]
+    weight_decay_range = [0, 1e-5]
+    max_epochs = 50
+    save_epoch_on = 10
 
-# Create combinations of all hyperparameters
-hyperparameters = product(hidden_size_range, learning_rate_range, weight_decay_range)
+    # Create combinations of all hyperparameters
+    hyperparameters = product(hidden_size_range, learning_rate_range, weight_decay_range)
 
-# Create a directory to save models and results
-os.makedirs("../models", exist_ok=True)
-results_file = "../models/results.json"
+    # Create a directory to save models and results
+    os.makedirs("../models", exist_ok=True)
+    results_file = "../models/results.json"
 
-# Load existing results if the file exists
-if os.path.exists(results_file):
-    with open(results_file, 'r') as f:
-        results = json.load(f)
-else:
-    results = []
+    # Load existing results if the file exists
+    if os.path.exists(results_file):
+        with open(results_file, 'r') as f:
+            results = json.load(f)
+    else:
+        results = []
 
-for hidden_size, lr, wd in hyperparameters:
-    # Define model, optimizer, and loss function
-    input_size = dataset[0][0].shape[0]  # Assuming each sample is a tuple (input, target)
-    output_size = dataset[0][1].shape[0]
-    model = MLP(input_size=input_size, hidden_size=hidden_size, output_size=output_size)
+    for hidden_size, lr, wd in hyperparameters:
+        # Define model, optimizer, and loss function
+        input_size = dataset[0][0].shape[1]
+        output_size = dataset[0][1].shape[1]
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=wd)
-    criterion = nn.MSELoss()
+        model = MLP(input_size=input_size, hidden_size=hidden_size, output_size=output_size)
 
-    # Track losses for each epoch
-    train_losses = []
-    val_losses = []
+        optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=wd)
+        criterion = nn.MSELoss()
 
-    # Train the model
-    best_val_loss = float('inf')
-    for epoch in tqdm(range(max_epochs)):
-        train_loss = train(model, train_loader, optimizer, criterion)
-        val_loss = validate(model, val_loader, criterion)
-        train_losses.append(train_loss)
-        val_losses.append(val_loss)
-        print(f"Epoch {epoch+1}/{max_epochs}, Train Loss: {train_loss}, Validation Loss: {val_loss}")
+        # Track losses for each epoch
+        train_losses = []
+        val_losses = []
 
-        # Save the model if it has the best validation loss so far or every save_epoch_on epochs
-        if val_loss < best_val_loss or (epoch + 1) % save_epoch_on == 0:
-            if val_loss < best_val_loss:
-                best_val_loss = val_loss
-            best_model_path = f"../models/mlp_model_h{hidden_size}_lr{lr}_wd{wd}_e{epoch+1}.pt"
-            torch.save(model.state_dict(), best_model_path)
-    
-    # Test the model
-    test_loss = test(model, test_loader, criterion)
-    print("Test Loss:", test_loss)
+        # Train the model
+        best_val_loss = float('inf')
+        for epoch in tqdm(range(max_epochs)):
+            train_loss = train(model, train_loader, optimizer, criterion)
+            val_loss = validate(model, val_loader, criterion)
+            train_losses.append(train_loss)
+            val_losses.append(val_loss)
+            print(f"Epoch {epoch+1}/{max_epochs}, Train Loss: {train_loss}, Validation Loss: {val_loss}")
 
-    # Save results
-    result = {
-        "hidden_size": hidden_size,
-        "learning_rate": lr,
-        "weight_decay": wd,
-        "best_val_loss": best_val_loss,
-        "test_loss": test_loss,
-        "model_path": best_model_path,
-        "train_losses": train_losses,
-        "val_losses": val_losses
-    }
-    results.append(result)
+            # Save the model if it has the best validation loss so far or every save_epoch_on epochs
+            if val_loss < best_val_loss or (epoch + 1) % save_epoch_on == 0:
+                if val_loss < best_val_loss:
+                    best_val_loss = val_loss
+                best_model_path = f"../models/mlp_model_h{hidden_size}_lr{lr}_wd{wd}_e{epoch+1}.pt"
+                torch.save(model.state_dict(), best_model_path)
+        
+        # Test the model
+        test_loss = test(model, test_loader, criterion)
+        print("Test Loss:", test_loss)
 
-    with open(results_file, 'w') as f:
-        json.dump(results, f, indent=4)
+        # Save results
+        result = {
+            "hidden_size": hidden_size,
+            "learning_rate": lr,
+            "weight_decay": wd,
+            "best_val_loss": best_val_loss,
+            "test_loss": test_loss,
+            "model_path": best_model_path,
+            "train_losses": train_losses,
+            "val_losses": val_losses
+        }
+        results.append(result)
+
+        with open(results_file, 'w') as f:
+            json.dump(results, f, indent=4)
