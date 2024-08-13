@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import torch.nn as nn
 from tqdm import tqdm
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 class RMSELoss(nn.Module):
     def __init__(self):
@@ -97,14 +98,14 @@ def testAndPlot(encoder, decoder, mlp, dataloader, name=""):
 
 # Path to the saved model
 model_path = "../models/model_h8192_lr0.0001_vec64_wd0_e50.pt"
-mlp_path = "../models/...." ## Change it later
+mlp_path = "../models/lr_model_e50.pt" ## Change it later
 testData_path = "../Dataset/graph_dataset_naive.pt"
 
 # Test dataset 
 testDataLoader = loadTestData(testData_path)
 
 # Load and test the model
-model = loadModel(model_path, mlpPath)
+model = loadModel(model_path, mlp_path)
 
 ## Plot the data
 testAndPlot(model, testDataLoader)

@@ -4,19 +4,21 @@ from sklearn.model_selection import train_test_split
 import json, os
 from itertools import product
 from tqdm import tqdm
-from kan import *
+from kan import KAN
 
 ## Set the 
-encoded_size = 1034
+encoded_size = 12800
 hidden_channels = 200
 in_channels = 4
 
 device = "cpu"
-if torch.cuda.is_available():
-    torch.device("cuda")
-    device = "cuda"
-else:
-    torch.device("cpu")
+## Use the GPU if the library supports it. 
+## Some versions crash the GPU for some weird reason.
+# if torch.cuda.is_available():
+#     torch.device("cuda")
+#     device = "cuda"
+# else:
+#     torch.device("cpu")
 
 ## Load the dataset
 # Load the data from the .pt file
@@ -34,10 +36,10 @@ def split_encoded_dataset(encoded_dataset, train_fraction):
 
     # Create the dictionary with the desired keys
     data_split = {
-        'train_input': train_input.to(device),
-        'test_input': test_input.to(device),
-        'train_output': train_output.to(device),
-        'test_output': test_output.to(device)
+        'train_input': train_input.view(train_input.size(0), -1).to(device),
+        'test_input': test_input.view(test_input.size(0), -1).to(device),
+        'train_output': train_output.view(train_output.size(0), -1).to(device),
+        'test_output': test_output.view(test_output.size(0), -1).to(device)
     }
 
     return data_split
@@ -49,4 +51,9 @@ print(dataset["test_input"].shape)
 
 ## Define the model.
 intermediateKANModel = KAN(width=[encoded_size, hidden_channels, encoded_size], grid=20, k=3, seed=0)
-intermediateKANModel.train(dataset, opt="LBFGS", steps=50, stop_grid_update_step=30)
+
+## For old versions
+##intermediateKANModel.train(dataset, opt="LBFGS", steps=50, stop_grid_update_step=30)
+
+## For updated version
+result = intermediateKANModel.fit(dataset, opt="LBFGS", steps=50, stop_grid_update_step=30)

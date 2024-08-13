@@ -132,7 +132,7 @@ if __name__ == "__main__":
             print(f"Epoch {epoch+1}/{max_epochs}, Train Loss: {train_loss}, Validation Loss: {val_loss}")
 
             # Save the model if it has the best validation loss so far or every save_epoch_on epochs
-            if val_loss < best_val_loss or (epoch + 1) % save_epoch_on == 0:
+            if (epoch + 1) % save_epoch_on == 0:
                 if val_loss < best_val_loss:
                     best_val_loss = val_loss
                 best_model_path = f"../models/mlp_model_h{hidden_size}_lr{lr}_wd{wd}_e{epoch+1}.pt"
