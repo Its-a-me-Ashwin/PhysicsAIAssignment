@@ -18,6 +18,7 @@ class RMSELoss(nn.Module):
 # Import the model classes
 from autoencoder import GATEncoder, GATDecoder, GraphAutoencoder
 from mlp import MLP
+from linearReg import LinearRegressionModel
 
 # Define the function to load and test the model
 def loadModel(model_path, intermidiateModelPath):
@@ -42,7 +43,12 @@ def loadModel(model_path, intermidiateModelPath):
     model.load_state_dict(torch.load(model_path))
 
     # Instantiate the model
-    mlp = MLP(vectorSize, hidden_channels, vectorSize).to(device)
+    ## Test LR
+    mlp = LinearRegressionModel(vectorSize, vectorSize).to(device)
+    
+    # Test MLP
+    #mlp = MLP(vectorSize, hidden_channels, vectorSize).to(device)
+
 
     # Load the model state dictionary
     mlp.load_state_dict(torch.load(intermidiateModelPath, map_location=device))
@@ -97,8 +103,14 @@ def testAndPlot(encoder, decoder, mlp, dataloader, name=""):
     plt.show()
 
 # Path to the saved model
+
+## Load the encoder and decoder
 model_path = "../models/model_h8192_lr0.0001_vec64_wd0_e50.pt"
-mlp_path = "../models/lr_model_e50.pt" ## Change it later
+
+## Load the intermidiate model (KAN/MLP/LR)
+mlp_path = "../models/lr_model_e50.pt" 
+
+## Load the test dataset. Generate from simulation.py
 testData_path = "../Dataset/graph_dataset_naive.pt"
 
 # Test dataset 

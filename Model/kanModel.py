@@ -6,23 +6,27 @@ from itertools import product
 from tqdm import tqdm
 from kan import KAN
 
-## Set the 
+## Set the hyper parameters.
+## These were the best that we noticed.
 encoded_size = 12800
-hidden_channels = 200
+hidden_channels = 200 #, 400
 in_channels = 4
 
 device = "cpu"
 ## Use the GPU if the library supports it. 
 ## Some versions crash the GPU for some weird reason.
-# if torch.cuda.is_available():
-#     torch.device("cuda")
-#     device = "cuda"
-# else:
-#     torch.device("cpu")
+if torch.cuda.is_available():
+    torch.device("cuda")
+    device = "cuda"
+else:
+    torch.device("cpu")
 
 ## Load the dataset
 # Load the data from the .pt file
 data = torch.load("../Dataset/kanDataSet.pt", map_location=torch.device(device))
+
+def saKanResults():
+    pass
 
 def split_encoded_dataset(encoded_dataset, train_fraction):
     # Extract the inputs and outputs for splitting
